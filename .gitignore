@@ -1,0 +1,40 @@
+# ---- data -------------------------------------------------------------
+# Raw NHANES files are public but large; fetch them with R/01_download_data.R.
+data/raw/
+data/*.rds
+data/*.csv
+# keep the folder in the repository
+!data/.gitkeep
+!data/README.md
+
+# ---- outputs ----------------------------------------------------------
+output/figures/*
+output/tables/*
+!output/figures/.gitkeep
+!output/tables/.gitkeep
+
+# ---- logs and sessions ------------------------------------------------
+logs/*
+!logs/.gitkeep
+.Rhistory
+.Rapp.history
+.RData
+.Rproj.user/
+*.Rproj
+
+# ---- large model objects ---------------------------------------------
+*.rds
+*.RData
+*.zip
+
+# ---- OS / editor ------------------------------------------------------
+.DS_Store
+Thumbs.db
+*~
+*.swp
+.idea/
+.vscode/
+
+# ---- rendered manuscripts --------------------------------------------
+*.docx
+~$*
