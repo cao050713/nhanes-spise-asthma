@@ -38,3 +38,6 @@ Thumbs.db
 # ---- rendered manuscripts --------------------------------------------
 *.docx
 ~$*
+
+# ---- internal notes (not part of the public repository) ---------------
+_internal/

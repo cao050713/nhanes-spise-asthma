@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: >-
+  SPISE and asthma in US adults: analysis pipeline
+  (NHANES 2009-2018)
+message: >-
+  If you use this code, please cite both the software (this repository)
+  and the associated manuscript.
+type: software
+authors:
+  - alias: caoxuanang
+version: 1.0.0
+date-released: "2026-11-18"
+license: MIT
+repository-code: >-
+  https://github.com/<USERNAME>/nhanes-spise-asthma
+keywords:
+  - NHANES
+  - SPISE
+  - asthma
+  - survey-weighted analysis
+  - prediction model
+  - machine learning

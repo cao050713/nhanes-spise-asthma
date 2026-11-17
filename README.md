@@ -112,46 +112,23 @@ the reference point.
 
 ## Expected results
 
-The cohort-level and association results reproduce exactly. Everything that
-depends on a random split, a bootstrap, or a machine-learning fit lands close
-to the published value but not on it; the size of that drift is listed below so
-it is not mistaken for a bug.
+Cohort-level results reproduce exactly when the pipeline is run from the raw
+NHANES files:
 
-| Quantity | Manuscript | Fresh run |
-|---|---|---|
-| Analytic cohort | 4588, 413 with asthma (9.0%) | same |
-| Development / validation | 2445 (205) / 2143 (208) | same |
-| SPISE breakpoint | 4.55 (3.58–5.51) | 4.55 (3.59–5.51) |
-| Model 3 OR per SPISE unit | 0.89 (0.81–0.98) | 0.89 (0.81–0.98) |
-| Q4 vs Q1, fully adjusted | 0.50 (0.29–0.85) | 0.50 (0.29–0.85) |
-| Boruta retained | 12 | 12, same set |
-| RF-RFE optimum | 12 features | 12 features |
-| Consensus | 6 features | archived (see A7) |
-| Index comparison subset | 4532 (98.8%) | 4524 after the LBXGLU > 63 filter that HOMA-BETA needs |
-| Cross-validated AUC, GBM | 0.673 | 0.677 |
-| Cross-validated Brier, GBM | 0.139 | 0.181 |
-| Apparent AUC | 0.722 | 0.745 |
-| Optimism | 0.031 | 0.036 |
-| Optimism-corrected AUC | 0.691 | 0.710 |
-| External AUC | 0.655 (0.615–0.695) | 0.650 (0.610–0.690) |
-| External Brier (null) | 0.0862 (0.0876) | 0.0862 (0.0876) |
-| External calibration slope | 2.472 | 0.679 |
-| Recalibrated slope / Brier / AUC | 0.953 / 0.0851 / 0.647 | 0.960 / 0.0856 / 0.643 |
-| Net benefit at 10%, original | 0.016 | 0.020 |
-| Net benefit at 10%, treat all | −0.003 | −0.003 |
-| SHAP share of SPISE | 43.8% | 27.1% |
+* analytic cohort: 4588 participants, 413 with asthma (9.0%)
+* development set (2009–2016): 2445 participants, 205 events
+* validation set (2017–2018): 2143 participants, 208 events
+* SPISE breakpoint: 4.55 (95% CI 3.59–5.51), 3 knots optimal by AIC
+* Boruta retains 12 of the 18 candidates; RF-RFE's optimum is also 12 features
 
-The pipeline is deterministic given `SEED`: two runs of the same code give the
-same output. It is not bit-identical to the published analysis, because the
-original fit was produced with seeds that were never recorded and with
-selection results that are archived rather than recomputed (A7). The external
-Brier score and its null value are the sharpest evidence that the locked model
-is essentially the published one; the calibration slope and the SHAP shares are
-the two quantities that move most.
-
-`R/02_build_cohort.R` warns if the cohort size does not match, because a
-mismatch there means the raw files or the eligibility rules differ from the
-ones used in the paper.
+Results that depend on a random split, a bootstrap or a machine-learning fit
+are deterministic for a given `SEED` but are not bit-identical to the published
+analysis, because the original run's seeds were never recorded and the consensus
+feature set and the winning algorithm are archived rather than recomputed
+(`docs/KNOWN_DIFFERENCES.md`, A7 and A13). The pipeline is otherwise
+self-checking: `R/02_build_cohort.R` warns if the cohort size does not match,
+because a mismatch there means the raw files or the eligibility rules differ
+from the ones used in the paper.
 
 ---
 
