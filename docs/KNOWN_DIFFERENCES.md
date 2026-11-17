@@ -166,6 +166,28 @@ and 3 adjust for it, but it is not offered to the selection step.
 reconstruction, i.e. 2 to 18. The Results state that subsets of 4 to 16
 features were evaluated. `R/09` uses `sizes = 4:16`.
 
+### A13. The algorithm that gets locked is the published one
+
+`R/11` applies the prespecified rule — highest cross-validated AUC, with
+algorithms equal at three decimals treated as tied and the Brier score
+breaking the tie — exactly as the manuscript describes it. Applied to a fresh
+run of step 10 it does not reproduce the published outcome: the top six
+algorithms sit within one standard error of each other, and with this run's
+fold splits random forest comes out ahead of GBM.
+
+That matters more than one changed name. A random forest refitted on the whole
+development set has an apparent AUC of 0.999; the model the paper describes has
+an apparent AUC of 0.722 and a Brier score that matches the published external
+validation to four decimals. Locking the forest would make every number in
+steps 12 to 14 describe a different model from the one in the manuscript.
+
+So, as with the consensus features (A7), the archived choice is used: the rule
+is applied and its winner is written to
+`output/tables/Table3_model_selection.csv`, but the model that is fitted,
+bootstrapped, validated and explained is `ALGORITHM_PUBLISHED` (GBM) with the
+tuning values step 10 found for it. The console output states both choices
+whenever they differ.
+
 ---
 
 ## B. Manuscript statements that conflict with the data

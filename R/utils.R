@@ -86,6 +86,11 @@ RCS_KNOTS       <- 3L
 CONSENSUS_PUBLISHED <- c("spise", "LBDLYMNO", "LBDNENO", "LBDEONO",
                          "cancer", "CVD")
 
+# Same reasoning for the algorithm that was locked: R/11 applies the
+# prespecified selection rule and reports its winner, but fits and locks the
+# algorithm the manuscript reports. See docs/KNOWN_DIFFERENCES.md, item A7.
+ALGORITHM_PUBLISHED <- "GBM"
+
 # ---------------------------------------------------------------------------
 # 3. Intermediate objects
 # ---------------------------------------------------------------------------

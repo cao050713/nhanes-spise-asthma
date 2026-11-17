@@ -80,39 +80,52 @@ if (length(tied) > 1) {
 cat("Selected algorithm:", selected, "\n")
 save_table(summ, "Table3_model_selection.csv")
 
-# The bootstrap below uses the gbm interface directly, which is what the
-# published model is. If a re-run selects a different algorithm the step has
-# to be extended with the matching fit/predict pair; stopping is preferable
-# to silently fitting the wrong thing.
-if (!identical(selected, "GBM")) {
-  stop("The optimism bootstrap in this script is implemented for GBM, the ",
-       "algorithm selected in the published analysis, but this run selected '",
-       selected, "'.\nExtend fit_final()/predict_final() below for that ",
-       "algorithm before continuing.", call. = FALSE)
+# The prespecified rule is applied and reported, but the model that is locked
+# is the published one. The comparison in step 10 is decided by noise: the top
+# algorithms sit within one standard error of each other, and which of them
+# comes out on top depends on fold splits whose seeds are not recorded. With
+# this run's seeds the rule picks a different algorithm than the manuscript
+# locked, and a random forest refitted on the whole development set has an
+# apparent AUC of 0.999, which is not the model the paper describes. As with
+# the consensus features (A7), the published choice is used downstream and the
+# re-run's choice is kept in the table above.
+if (!identical(selected, ALGORITHM_PUBLISHED)) {
+  message("NOTE: the prespecified rule selected '", selected, "' in this run; ",
+          "the published analysis locked '", ALGORITHM_PUBLISHED, "', which is ",
+          "what is fitted and locked below. See docs/KNOWN_DIFFERENCES.md, A7.")
 }
+selected <- ALGORITHM_PUBLISHED
+cat("Locked algorithm:", selected, "\n")
 
 # ---------------------------------------------------------------------------
 # 2. Final fit on the development set, without resampling
 # ---------------------------------------------------------------------------
+# The selected algorithm is refitted on the whole development set with its
+# cross-validated tuning values and no resampling, through the same caret
+# interface used in step 10. Doing it through caret rather than through each
+# algorithm's own fitting function keeps one predict() contract for steps 12
+# and 14, whatever wins the comparison.
 best <- trained[[selected]]$bestTune
 if (is.null(best)) best <- data.frame()
 
-imp <- caret::preProcess(dev[, vars], method = "medianImpute")
-dev_proc <- stats::predict(imp, dev[, vars])
+fit_no_resample <- function(x, yv, method, tune) {
+  tc <- caret::trainControl(method = "none", classProbs = TRUE)
+  args <- list(x = x, y = yv, method = method, trControl = tc, metric = "ROC",
+               preProcess = c("medianImpute", "center", "scale"))
+  if (nrow(tune)) args$tuneGrid <- tune
+  if (identical(method, "gbm")) args$verbose <- FALSE
+  do.call(caret::train, args)
+}
 
-fit_final <- gbm::gbm.fit(
-  x = dev_proc, y = y,
-  distribution      = "bernoulli",
-  n.trees           = if ("n.trees" %in% names(best)) best$n.trees else 200,
-  interaction.depth = if ("interaction.depth" %in% names(best)) best$interaction.depth else 2,
-  shrinkage         = if ("shrinkage" %in% names(best)) best$shrinkage else 0.05,
-  n.minobsinnode    = if ("n.minobsinnode" %in% names(best)) best$n.minobsinnode else 10,
-  bag.fraction      = 0.5,
-  verbose           = FALSE
-)
-nt <- if ("n.trees" %in% names(best)) best$n.trees else 200
+set.seed(SEED)
+fit_final <- fit_no_resample(dev[, vars], factor(dev$asthma, 0:1, c("No", "Yes")),
+                             trained[[selected]]$method, best)
 
-pred_dev <- stats::predict(fit_final, dev_proc, n.trees = nt, type = "response")
+predict_prob <- function(fit, newdata) {
+  as.numeric(stats::predict(fit, newdata = newdata, type = "prob")[, "Yes"])
+}
+
+pred_dev <- predict_prob(fit_final, dev[, vars])
 
 auc_apparent <- as.numeric(pROC::auc(pROC::roc(y, pred_dev, quiet = TRUE,
                                                direction = "<")))
@@ -121,33 +134,30 @@ cat(sprintf("\nApparent AUC: %.3f\n", auc_apparent))
 # ---------------------------------------------------------------------------
 # 3. Bootstrap optimism
 # ---------------------------------------------------------------------------
+RNGkind("L'Ecuyer-CMRG")
+set.seed(SEED)
+
 cl <- parallel::makeCluster(max(1, parallel::detectCores() - 1))
 doParallel::registerDoParallel(cl)
 
 optimism_vec <- foreach::foreach(
   b = seq_len(N_BOOT_OPTIMISM), .combine = c,
-  .packages = c("gbm", "pROC")
+  .packages = c("caret", "pROC")
 ) %dopar% {
   set.seed(SEED + b)
-  idx <- sample.int(nrow(dev_proc), nrow(dev_proc), replace = TRUE)
-  d_b <- dev_proc[idx, , drop = FALSE]
+  idx <- sample.int(nrow(dev), nrow(dev), replace = TRUE)
   y_b <- y[idx]
   if (length(unique(y_b)) < 2) return(NA_real_)
 
-  fit_b <- gbm::gbm.fit(
-    x = d_b, y = y_b, distribution = "bernoulli",
-    n.trees           = nt,
-    interaction.depth = if ("interaction.depth" %in% names(best)) best$interaction.depth else 2,
-    shrinkage         = if ("shrinkage" %in% names(best)) best$shrinkage else 0.05,
-    n.minobsinnode    = if ("n.minobsinnode" %in% names(best)) best$n.minobsinnode else 10,
-    bag.fraction = 0.5, verbose = FALSE
-  )
-  p_boot <- stats::predict(fit_b, d_b, n.trees = nt, type = "response")
-  auc_boot <- as.numeric(pROC::auc(pROC::roc(y_b, p_boot, quiet = TRUE,
-                                             direction = "<")))
-  p_orig <- stats::predict(fit_b, dev_proc, n.trees = nt, type = "response")
-  auc_orig <- as.numeric(pROC::auc(pROC::roc(y, p_orig, quiet = TRUE,
-                                             direction = "<")))
+  fit_b <- fit_no_resample(dev[idx, vars, drop = FALSE],
+                           factor(y_b, 0:1, c("No", "Yes")),
+                           trained[[selected]]$method, best)
+  auc_boot <- as.numeric(pROC::auc(pROC::roc(
+    y_b, predict_prob(fit_b, dev[idx, vars, drop = FALSE]),
+    quiet = TRUE, direction = "<")))
+  auc_orig <- as.numeric(pROC::auc(pROC::roc(
+    y, predict_prob(fit_b, dev[, vars, drop = FALSE]),
+    quiet = TRUE, direction = "<")))
   auc_boot - auc_orig
 }
 optimism_vec <- optimism_vec[!is.na(optimism_vec)]
@@ -190,8 +200,10 @@ save_fig(p, "FigureS1_optimism.png", width = 6, height = 4.5)
 # ---------------------------------------------------------------------------
 # 5. Locked model
 # ---------------------------------------------------------------------------
-locked <- list(algorithm = selected, fit = fit_final, best = best,
-               n_trees = nt, impute = imp, vars = vars)
+# `fit` is a caret train object fitted on the whole development set; predict()
+# with type = "prob" applies the stored preprocessing, so steps 12 and 14 need
+# nothing else.
+locked <- list(algorithm = selected, fit = fit_final, best = best, vars = vars)
 write_step(locked, "locked_model")
 
 stamp_session("11_internal_validation")

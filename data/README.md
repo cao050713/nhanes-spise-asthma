@@ -10,7 +10,7 @@ Nothing in this folder is committed to the repository.
 | `features.rds` | `R/09_feature_selection.R` | Boruta, LASSO, RF-RFE and consensus selections |
 | `trained_models.rds` | `R/10_model_comparison_cv.R` | seven fitted `caret` objects (large, ~100 MB) |
 | `cv_predictions_oof.rds` | `R/10` | out-of-fold predictions for every algorithm and repeat |
-| `locked_model.rds` | `R/11_internal_validation.R` | the final GBM, its imputation parameters and tuning values |
+| `locked_model.rds` | `R/11_internal_validation.R` | the final model as a `caret` train object (preprocessing and tuning values included) |
 | `external_predictions.rds` | `R/12_external_validation.R` | validation-set predictions, original and recalibrated |
 | `shap_values.rds` | `R/14_shap.R` | kernel SHAP values |
 | `cohort_analytic.csv` | `R/02` | plain-text copy of the cohort, for inspection |

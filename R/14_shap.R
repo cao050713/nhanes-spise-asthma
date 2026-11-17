@@ -12,9 +12,8 @@
 # =============================================================================
 
 source("R/utils.R")
-# caret supplies predict.preProcess for the imputation object stored with the
-# locked model; gbm supplies predict.gbm for the model itself.
-need("kernelshap", "shapviz", "dplyr", "ggplot2", "gbm", "caret")
+# caret supplies predict.train for the locked model object.
+need("kernelshap", "shapviz", "dplyr", "ggplot2", "caret")
 
 split  <- read_step("split")
 locked <- read_step("locked_model")
@@ -31,19 +30,17 @@ set.seed(SEED)
 idx_explain <- sample.int(nrow(val), min(SHAP_N_EXPLAIN, nrow(val)))
 idx_bg      <- sample.int(nrow(dev), min(SHAP_N_BACKGROUND, nrow(dev)))
 
-X_explain <- as.data.frame(stats::predict(locked$impute,
-                                          val[idx_explain, vars]))
-X_bg      <- as.data.frame(stats::predict(locked$impute,
-                                          dev[idx_bg, vars]))
+X_explain <- val[idx_explain, vars]
+X_bg      <- dev[idx_bg, vars]
 
 # ---------------------------------------------------------------------------
 # 2. Kernel SHAP
 # ---------------------------------------------------------------------------
 pred_fun <- function(object, X) {
-  # gbm::predict.gbm wants a data frame whose columns are named like the
-  # training data, so X is passed through as-is rather than as a matrix.
-  as.numeric(stats::predict(object, as.data.frame(X),
-                            n.trees = locked$n_trees, type = "response"))
+  # The locked model is a caret train object (R/11); predict() with
+  # type = "prob" applies the preprocessing stored inside it.
+  as.numeric(stats::predict(object, newdata = as.data.frame(X),
+                            type = "prob")[, "Yes"])
 }
 
 shap <- kernelshap::kernelshap(

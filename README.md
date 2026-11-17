@@ -127,18 +127,18 @@ it is not mistaken for a bug.
 | Boruta retained | 12 | 12, same set |
 | RF-RFE optimum | 12 features | 12 features |
 | Consensus | 6 features | archived (see A7) |
-| Cross-validated AUC, GBM | 0.673 | 0.676 |
+| Cross-validated AUC, GBM | 0.673 | 0.677 |
 | Cross-validated Brier, GBM | 0.139 | 0.181 |
 | Apparent AUC | 0.722 | 0.745 |
 | Optimism | 0.031 | 0.036 |
-| Optimism-corrected AUC | 0.691 | 0.709 |
-| External AUC | 0.655 (0.615–0.695) | 0.647 (0.606–0.688) |
-| External Brier (null) | 0.0862 (0.0876) | 0.0861 (0.0876) |
-| External calibration slope | 2.472 | 0.699 |
-| Recalibrated slope / Brier / AUC | 0.953 / 0.0851 / 0.647 | 0.956 / 0.0856 / 0.641 |
-| Net benefit at 10%, original | 0.016 | 0.021 |
+| Optimism-corrected AUC | 0.691 | 0.710 |
+| External AUC | 0.655 (0.615–0.695) | 0.650 (0.610–0.690) |
+| External Brier (null) | 0.0862 (0.0876) | 0.0862 (0.0876) |
+| External calibration slope | 2.472 | 0.679 |
+| Recalibrated slope / Brier / AUC | 0.953 / 0.0851 / 0.647 | 0.960 / 0.0856 / 0.643 |
+| Net benefit at 10%, original | 0.016 | 0.020 |
 | Net benefit at 10%, treat all | −0.003 | −0.003 |
-| SHAP share of SPISE | 43.8% | 25.2% |
+| SHAP share of SPISE | 43.8% | 26.5% |
 
 The pipeline is deterministic given `SEED`: two runs of the same code give the
 same output. It is not bit-identical to the published analysis, because the
@@ -193,10 +193,11 @@ used for a given run are recorded alongside the results.
   downstream. The original LASSO and RF-RFE fold seeds were never recorded and
   cannot be recovered, so the reconstruction reproduces Boruta exactly and the
   other two to within one variable. See `docs/KNOWN_DIFFERENCES.md`, A7.
-* Step 11 stops with an explanation if a re-run of step 10 does not select
-  GBM, because the published model is a GBM and the optimism bootstrap is
-  written for that interface. This is deliberate: silently bootstrapping a
-  different algorithm would produce numbers that look comparable and are not.
+* Step 11 applies the same rule to the algorithm choice and reports its
+  winner, but fits and locks the published algorithm (`ALGORITHM_PUBLISHED`,
+  GBM) whenever the two disagree — a random forest locked instead would have
+  an apparent AUC of 0.999 and would not be the model the paper describes.
+  See `docs/KNOWN_DIFFERENCES.md`, A13.
 
 ---
 
@@ -204,7 +205,7 @@ used for a given run are recorded alongside the results.
 
 `docs/KNOWN_DIFFERENCES.md` lists every place where the original analysis
 scripts and the submitted text disagreed, and how each was resolved. Section A
-lists twelve code-side fixes. Section B lists eight statements in the manuscript
+lists thirteen code-side fixes. Section B lists eight statements in the manuscript
 that the data do not support — including the asthma definition, the size of the
 insulin subset, two numbers in the sensitivity analyses, and the external
 calibration slope — and those need an editorial decision before submission.

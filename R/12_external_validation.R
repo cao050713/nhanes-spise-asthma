@@ -10,10 +10,8 @@
 # =============================================================================
 
 source("R/utils.R")
-# gbm is needed even though nothing is fitted here: the locked model is a
-# gbm object, and predict() only finds predict.gbm once the package namespace
-# is loaded.
-need("dplyr", "caret", "pROC", "ggplot2", "gbm")
+# caret supplies predict.train for the locked model object.
+need("dplyr", "caret", "pROC", "ggplot2")
 
 split  <- read_step("split")
 locked <- read_step("locked_model")
@@ -24,9 +22,12 @@ y   <- as.integer(val$asthma)
 # ---------------------------------------------------------------------------
 # 1. Predictions from the locked model
 # ---------------------------------------------------------------------------
-val_proc <- stats::predict(locked$impute, val[, locked$vars])
-pred <- as.numeric(stats::predict(locked$fit, val_proc,
-                                  n.trees = locked$n_trees, type = "response"))
+# The locked fit is a caret train object (see R/11); predict() with
+# type = "prob" applies the preprocessing stored inside it.
+val_pred <- function(newdata) {
+  as.numeric(stats::predict(locked$fit, newdata = newdata, type = "prob")[, "Yes"])
+}
+pred <- val_pred(val[, locked$vars])
 
 stopifnot(length(pred) == length(y))
 
