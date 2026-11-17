@@ -6,38 +6,24 @@
 # Bonferroni-corrected alpha of 0.05/3 = 0.0167 for the three comparisons
 # against SPISE.
 #
-# The comparison needs fasting insulin, which the public NHANES releases
-# provide only from 2013 onward, so this analysis runs on a subset of the
+# The comparison needs fasting insulin. The cohort carries LBXIN, assembled in
+# R/02 from GLU_F/GLU_G (2009-2012) and INS_H/I/J (2013-2018); it is missing
+# for 55 of 4588 participants (1.2%), so this analysis runs on 98.8% of the
 # cohort. The subset size is printed and written to
-# output/tables/index_comparison_sample.csv; see docs/KNOWN_DIFFERENCES.md.
+# output/tables/index_comparison_sample.csv.
 #
 #   Rscript R/07_index_comparison.R
 # =============================================================================
 
 source("R/utils.R")
-need("haven", "dplyr", "survey", "pROC", "ggplot2")
+need("dplyr", "survey", "pROC", "ggplot2")
 
 cohort <- read_step("cohort")
 
 # ---------------------------------------------------------------------------
-# 1. Fasting insulin
+# 1. HOMA indices
 # ---------------------------------------------------------------------------
-# Read every INS_*.XPT that is present in data/raw/ and keep the cycles it
-# covers. Cycles without the file are simply absent from the comparison.
-ins_files <- list.files(path_raw(), pattern = "^INS_[A-Z]\\.XPT$",
-                        ignore.case = TRUE, full.names = TRUE)
-if (!length(ins_files)) {
-  stop("No INS_*.XPT in data/raw/. Fasting insulin is required for HOMA-IR ",
-       "and HOMA-BETA.\nRun R/01_download_data.R first.", call. = FALSE)
-}
-
-ins <- do.call(rbind, lapply(ins_files, function(f) {
-  x <- haven::read_xpt(f)
-  x[, c("SEQN", "LBXIN"), drop = FALSE]
-}))
-
 dat <- cohort %>%
-  dplyr::inner_join(ins, by = "SEQN") %>%
   dplyr::filter(!is.na(LBXIN), LBXGLU > 63) %>%      # HOMA-BETA denominator
   dplyr::mutate(
     HOMA_IR   = LBXIN * LBXGLU / 405,

@@ -123,10 +123,11 @@ it is not mistaken for a bug.
 | Development / validation | 2445 (205) / 2143 (208) | same |
 | SPISE breakpoint | 4.55 (3.58–5.51) | 4.55 (3.59–5.51) |
 | Model 3 OR per SPISE unit | 0.89 (0.81–0.98) | 0.89 (0.81–0.98) |
-| Q4 vs Q1, fully adjusted | 0.50 (0.25–0.85) | 0.50 (0.29–0.85) |
+| Q4 vs Q1, fully adjusted | 0.50 (0.29–0.85) | 0.50 (0.29–0.85) |
 | Boruta retained | 12 | 12, same set |
 | RF-RFE optimum | 12 features | 12 features |
 | Consensus | 6 features | archived (see A7) |
+| Index comparison subset | 4532 (98.8%) | 4524 after the LBXGLU > 63 filter that HOMA-BETA needs |
 | Cross-validated AUC, GBM | 0.673 | 0.677 |
 | Cross-validated Brier, GBM | 0.139 | 0.181 |
 | Apparent AUC | 0.722 | 0.745 |
@@ -138,7 +139,7 @@ it is not mistaken for a bug.
 | Recalibrated slope / Brier / AUC | 0.953 / 0.0851 / 0.647 | 0.960 / 0.0856 / 0.643 |
 | Net benefit at 10%, original | 0.016 | 0.020 |
 | Net benefit at 10%, treat all | −0.003 | −0.003 |
-| SHAP share of SPISE | 43.8% | 26.5% |
+| SHAP share of SPISE | 43.8% | 27.1% |
 
 The pipeline is deterministic given `SEED`: two runs of the same code give the
 same output. It is not bit-identical to the published analysis, because the
@@ -205,10 +206,14 @@ used for a given run are recorded alongside the results.
 
 `docs/KNOWN_DIFFERENCES.md` lists every place where the original analysis
 scripts and the submitted text disagreed, and how each was resolved. Section A
-lists thirteen code-side fixes. Section B lists eight statements in the manuscript
-that the data do not support — including the asthma definition, the size of the
-insulin subset, two numbers in the sensitivity analyses, and the external
-calibration slope — and those need an editorial decision before submission.
+lists thirteen code-side fixes. Section B listed nine statements in the
+manuscript that needed an editorial decision; the author has now ruled on all
+of them — the asthma definition, the SHAP sample size and the Q4 confidence
+interval were fixed in the manuscript, the insulin subset turned out to be
+correct (fasting insulin lives in the GLU file before 2013, and `R/01`/`R/02`
+were updated to merge it that way), and the remaining four (Python clause,
+unweighted-sensitivity numbers, Table 1 wording, external calibration slope)
+stand as published.
 
 ---
 

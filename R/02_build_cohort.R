@@ -70,7 +70,23 @@ read_cycle <- function(suffix) {
   hdl  <- rd("HDL",  c("SEQN", "LBDHDD"))
   tri  <- rd("TRIGLY", c("SEQN", "LBXTR", "LBDLDL"))
   tch  <- rd("TCHOL", c("SEQN", "LBXTC"))
-  glu  <- rd("GLU",  c("SEQN", "LBXGLU"))
+  glu_raw <- haven::read_xpt(path_raw(sprintf("GLU_%s.XPT", suffix)))
+  glu_keep <- intersect(c("SEQN", "LBXGLU", "LBXIN"), names(glu_raw))
+  if (!"LBXGLU" %in% glu_keep) {
+    stop("LBXGLU not found in ", basename(sprintf("GLU_%s.XPT", suffix)),
+         "\nFound: ", paste(names(glu_raw), collapse = ", "), call. = FALSE)
+  }
+  glu <- glu_raw[, glu_keep, drop = FALSE]
+
+  # Fasting insulin: part of the glucose file up to 2011-2012, its own INS
+  # component from 2013-2014 onward (which is why R/01 downloads INS_H/I/J).
+  if ("LBXIN" %in% names(glu)) {
+    ins <- glu[, c("SEQN", "LBXIN"), drop = FALSE]
+    glu <- glu[, c("SEQN", "LBXGLU"), drop = FALSE]
+  } else {
+    ins <- rd("INS", c("SEQN", "LBXIN"))
+  }
+
   ghb  <- rd("GHB",  c("SEQN", "LBXGH"))
   cbc  <- rd("CBC",  c("SEQN", "LBDMONO", "LBDLYMNO", "LBDNENO", "LBXRBCSI",
                        "LBXRDW", "LBXPLTSI", "LBDEONO"))
@@ -86,7 +102,8 @@ read_cycle <- function(suffix) {
   if (alq_var == "ALQ111") names(alq)[2] <- "ALQ110"
 
   out <- Reduce(function(a, b) dplyr::inner_join(a, b, by = "SEQN"),
-                list(demo, bmx, hdl, tri, tch, glu, ghb, cbc, smq, alq, mcq))
+                list(demo, bmx, hdl, tri, tch, glu, ins, ghb, cbc, smq, alq,
+                     mcq))
   out$cycle <- cycles[[suffix]]
   out
 }
@@ -112,11 +129,14 @@ dat <- raw %>%
     SMQ020 = dplyr::if_else(SMQ020 %in% c(7, 9), NA_real_, SMQ020),
     ALQ110 = dplyr::if_else(ALQ110 %in% c(7, 9), NA_real_, ALQ110),
 
-    # Cardiovascular disease: any of the four self-reported conditions
+    # Cardiovascular disease: any of the four self-reported conditions. A
+    # "refused" (9) or "don't know" (7) answer on any item makes the composite
+    # unclassifiable, so CVD is missing and the complete-case filter drops the
+    # participant, as in the published analysis.
     CVD = dplyr::case_when(
-      MCQ160B == 1 | MCQ160C == 1 | MCQ160D == 1 | MCQ160F == 1 ~ 1L,
       MCQ160B %in% c(7, 9) | MCQ160C %in% c(7, 9) |
         MCQ160D %in% c(7, 9) | MCQ160F %in% c(7, 9) ~ NA_integer_,
+      MCQ160B == 1 | MCQ160C == 1 | MCQ160D == 1 | MCQ160F == 1 ~ 1L,
       TRUE ~ 0L
     ),
     cancer = dplyr::case_when(MCQ220 == 1 ~ 1L,
@@ -150,8 +170,8 @@ dat <- raw %>%
   dplyr::select(
     SEQN, cycle, asthma, spise, WTMEC_combind,
     RIAGENDR, RIDAGEYR, RIDRETH1, SMQ020, ALQ110, CVD, cancer,
-    LBXGLU, LBXGH, LBDMONO, LBDLYMNO, LBDNENO, LBXRBCSI, LBXRDW, LBXPLTSI,
-    LBDEONO,
+    LBXGLU, LBXIN, LBXGH, LBDMONO, LBDLYMNO, LBDNENO, LBXRBCSI, LBXRDW,
+    LBXPLTSI, LBDEONO,
     LBXTC, LBDLDL, LBDHDD, LBXTR, BMXBMI,
     SDMVPSU, SDMVSTRA,
     female, smoking, drinking, lymph, neut, eos, rdw, plt

@@ -25,13 +25,13 @@ components <- list(
   TRIGLY = "triglycerides (LBXTR), LDL cholesterol (LBDLDL)",
   HDL    = "HDL cholesterol (LBDHDD)",
   TCHOL  = "total cholesterol (LBXTC)",
-  GLU    = "fasting glucose (LBXGLU)",
+  GLU    = "fasting glucose (LBXGLU); fasting insulin (LBXIN) up to 2011-2012",
   GHB    = "glycated haemoglobin (LBXGH)",
   CBC    = "monocyte, lymphocyte, neutrophil, eosinophil, RDW, platelet, RBC",
   MCQ    = "asthma items (MCQ010, MCQ035), cancer (MCQ220), CVD items",
   SMQ    = "smoking (SMQ020)",
   ALQ    = "alcohol (ALQ110 in 2009-2016, ALQ111 in 2017-2018)",
-  INS    = "fasting insulin (LBXIN); only available from 2013 onward"
+  INS    = "fasting insulin (LBXIN); its own component from 2013-2014 onward"
 )
 
 base_url <- function(year, file, suffix) {
@@ -39,7 +39,8 @@ base_url <- function(year, file, suffix) {
           year, file, suffix)
 }
 
-# Insulin was not measured in 2009-2012.
+# Fasting insulin is part of the GLU file in 2009-2012; from 2013-2014 it has
+# its own INS component, so INS_F and INS_G do not exist on the server.
 components_cycle <- function(comp, suffix) {
   if (comp == "INS" && suffix %in% c("F", "G")) return(FALSE)
   TRUE
@@ -69,8 +70,8 @@ manifest$file <- sprintf("%s_%s.XPT", manifest$component, manifest$suffix)
 manifest$url  <- mapply(base_url, manifest$year, manifest$component,
                         manifest$suffix, USE.NAMES = FALSE)
 
-message(sprintf("Need %d files (%d components x 5 cycles, minus insulin for 2009-2012).",
-                nrow(manifest), length(components)))
+message(sprintf("Need %d files (12 components x 5 cycles, minus INS_F/INS_G).",
+                nrow(manifest)))
 
 failed <- character(0)
 for (i in seq_len(nrow(manifest))) {

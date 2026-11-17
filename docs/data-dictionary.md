@@ -72,7 +72,7 @@ item codes except where a derived name is used.
 | `LBXRBCSI` | CBC | Red blood cell count | million cells/µL |
 | `LBXTC` | TCHOL | Total cholesterol | mg/dL |
 | `LBDLDL` | TRIGLY | LDL cholesterol | mg/dL |
-| `LBXIN` | INS | Fasting insulin (2013 onward only) | µIU/mL |
+| `LBXIN` | GLU (2009–2012), INS (2013–2018) | Fasting insulin; part of the glucose file in the first two cycles, its own INS component afterwards | µIU/mL |
 
 Short aliases used by the models: `lymph` = `LBDLYMNO`, `neut` = `LBDNENO`,
 `eos` = `LBDEONO`, `rdw` = `LBXRDW`, `plt` = `LBXPLTSI`.

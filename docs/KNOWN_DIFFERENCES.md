@@ -193,7 +193,23 @@ whenever they differ.
 ## B. Manuscript statements that conflict with the data
 
 These cannot be fixed in the code without breaking the reported numbers, so
-they need an editorial decision. **Please read these before submission.**
+they need an editorial decision.
+
+**Status after the author's review (2026-11-18):**
+
+* **B1, B3, B6 — resolved.** The manuscript (`asthma正文.docx`, backup
+  `asthma正文_备份_B类修订前.docx`) was edited: the Methods now define asthma
+  via MCQ010 *and* MCQ035 (current asthma), the Results say "current asthma"
+  instead of "ever asthma", the SHAP sample is 200 throughout, and the Q4
+  interval reads 0.29–0.85.
+* **B2 — not a discrepancy.** The author confirmed that fasting insulin was
+  part of the GLU file in 2009–2012 (`LBXIN` inside `GLU_F`/`GLU_G`) and only
+  moved to its own INS component from 2013–2014. `R/01`/`R/02` were updated
+  accordingly; rebuilding the cohort from the raw XPT files reproduces 4588
+  participants with insulin for 4533 of them (98.8%).
+* **B4, B5, B7, B8 — kept as published**, by the author's decision. The
+  sections below describe what the code produces; the manuscript wording
+  stands.
 
 ### B1. The asthma definition is current asthma, not lifetime diagnosis
 
@@ -213,45 +229,56 @@ The two definitions give different samples:
 | `MCQ010 = 1` and `MCQ035 = 1` (current) | **413** |
 
 Every reported number — 413 cases (9.0%), 205 in the development set, 208 in
-the validation set — belongs to the current-asthma definition. The sentence in
-the Methods, and the phrase "ever asthma" in the Results, describe the other
-one.
+the validation set — belongs to the current-asthma definition.
 
-Recommended fix: change the Methods sentence to describe current asthma (a
-positive answer to both items), and replace "ever asthma" in the Results with
-"current asthma". Nothing else changes.
+**Resolved in the manuscript:** the Methods sentence now reads
 
-`R/02_build_cohort.R` implements the current-asthma definition and documents
-why; `asthma_from_items()` is the single place to change it.
+> Asthma was defined as a "yes" answer to "Has a doctor or other health
+> professional ever told you that you have asthma?" (item MCQ010) together
+> with a "yes" answer to "Do you still have asthma?" (item MCQ035), which
+> captures current physician-diagnosed asthma.
 
-### B2. The insulin subset is smaller than reported
+and the Results phrase "(ever asthma)" now reads "(current asthma)".
+`R/02_build_cohort.R` implements the current-asthma definition;
+`asthma_from_items()` is the single place to change it.
+
+### B2. The insulin subset — resolved, not a discrepancy
 
 Results, on the index comparison:
 
 > this analysis was restricted to the 4532 participants with available fasting
 > insulin (98.8% of the full sample of 4588)
 
-Fasting insulin (`LBXIN`, file `INS_*`) is only in the public releases from
-2013 onward, and the original code reads only `INS_H`, `INS_I` and `INS_J`.
-The cohort cannot contain more than about 3939 participants with insulin —
-roughly 86%, not 98.8%. The 4532 figure looks like 4588 minus a small
-missingness count, which would only be possible if insulin had been measured
-in all five cycles.
+The initial concern was that `LBXIN` only appears in a dedicated INS file from
+2013 onward. That is true but incomplete: in the 2009–2010 and 2011–2012
+cycles fasting insulin is part of the glucose file (`GLU_F`, `GLU_G`), and the
+author confirmed the 4532 figure comes from the full five-cycle merge.
 
-Two possibilities: either the number was transcribed from a different run, or
-the comparison was in fact done on the full sample with insulin missing for
-2009–2012 (which the models would silently drop). Either way, the sentence
-should be checked against `output/tables/index_comparison_sample.csv`, which
-`R/07` writes and which reports the actual subset size and cycles.
+The repository was updated accordingly:
+
+* `R/01` still downloads 58 files — `GLU_F`/`GLU_G` carry `LBXIN` alongside
+  `LBXGLU`; only `INS_H`, `INS_I`, `INS_J` are separate downloads.
+* `R/02` reads `LBXIN` from the GLU file for 2009–2012 and from the INS file
+  for 2013–2018, and stores it in the cohort.
+* `R/07` no longer re-reads the INS files; it uses the cohort's `LBXIN`
+  column directly.
+
+Rebuilding the cohort from the raw XPT files reproduces 4588 participants, of
+whom **4533 (98.8%)** have insulin — one more than the 4532 quoted, a
+difference of one fasting-subsample record that does not change any reported
+number. Applying the additional `LBXGLU > 63` filter that `HOMA-BETA` needs,
+the index comparison runs on 4524 participants with 406 events
+(`output/tables/index_comparison_sample.csv`).
 
 ### B3. SHAP sample size: 200 in one paragraph, 100 in another
 
 Methods says SHAP was applied "in 200 randomly selected participants from the
-external validation set". Results says "the SHAP estimates rest on 100
-participants". The code uses 100 (`X_explain <- test_x[1:min(100, ...)]`), and
-the repository keeps 100 (`SHAP_N_EXPLAIN`).
+external validation set". Results said "the SHAP estimates rest on 100
+participants". The code used 100.
 
-Whichever number is right, the two sentences need to agree.
+**Resolved (author decision: 200).** The Results sentence now reads 200, and
+`SHAP_N_EXPLAIN` in `R/utils.R` is 200; Figure 5 was regenerated on the
+200-participant sample.
 
 ### B4. Python is cited but not used
 
@@ -300,8 +327,9 @@ not: on the log scale 0.50 sits 0.693 below the upper bound and 0.531 above the
 lower one, and a Wald interval has to be symmetric. The repository computes
 0.50 (0.29–0.85), which is symmetric.
 
-The lower bound in the paper should read 0.29. Nothing else in the sentence
-changes.
+The lower bound in the paper should read 0.29. **Resolved in the manuscript:**
+the Results now read "OR 0.50, 95% CI 0.29–0.85, p = 0.014". Nothing else in
+the sentence changes.
 
 ### B7. Table 1's prose reports means under the label "median"
 
@@ -353,6 +381,29 @@ cannot both be right.
 sentence should read that, and "drifted markedly" should probably become
 "drifted": a slope of 0.70 means the predictions are too extreme, which is
 mild miscalibration rather than a collapse.
+
+### B9. The index comparison: fresh run finds SPISE vs TyG significant too
+
+The manuscript says SPISE's advantage over the two HOMA indices remained
+significant after Bonferroni correction, implying the comparison against TyG
+did not. With the corrected insulin merge the comparison now runs on 4524
+participants (406 events) across all five cycles, and the fresh run
+(`output/tables/Table2_index_AUC_comparisons.csv`) gives:
+
+| Comparison | ΔAUC (95% CI) | p (Bonferroni ×3) |
+|---|---|---|
+| SPISE vs TyG | 0.011 (0.004 to 0.018) | < 0.001 |
+| SPISE vs HOMA-IR | 0.010 (0.002 to 0.018) | 0.024 |
+| SPISE vs HOMA-BETA | 0.011 (0.004 to 0.018) | 0.012 |
+
+All three differences are significant at the corrected 0.05 level, with TyG
+the *most* significant — the opposite pattern to the manuscript's wording.
+The point estimates line up with the paper (SPISE highest, the other three
+within 0.001 of each other), so the models are the same; the significance
+pattern does not reproduce. The earlier code compared AUCs only for SPISE vs
+TyG and SPISE vs HOMA-BETA (`KNOWN_DIFFERENCES` A2), and its seeds were not
+recorded, so the exact earlier result cannot be recovered. Per the author's
+decision the manuscript wording stands; the code reports what it computes.
 
 ---
 

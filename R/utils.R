@@ -73,7 +73,7 @@ DCA_THRESHOLDS  <- seq(0.02, 0.40, by = 0.01)
 DCA_REPORTED    <- c(0.10, 0.15)
 
 # SHAP
-SHAP_N_EXPLAIN  <- 100L    # participants explained in the external set
+SHAP_N_EXPLAIN  <- 200L    # participants explained in the external set
 SHAP_N_BACKGROUND <- 200L
 
 # RCS
