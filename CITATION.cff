@@ -8,11 +8,13 @@ message: >-
 type: software
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.24332109
-    description: Zenodo archive of version 1.0.0
+    value: 10.5281/zenodo.24332108
+    description: >-
+      Zenodo archive, all versions (concept DOI); the current version is
+      10.5281/zenodo.24332109 for v1.0.0 and later releases carry their own
 authors:
   - alias: caoxuanang
-version: 1.0.0
+version: 1.1.0
 date-released: "2026-11-18"
 license: MIT
 repository-code: >-

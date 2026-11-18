@@ -112,10 +112,10 @@ table1$p_value_formatted <- fmt_p(table1$p_value)
 print(table1, row.names = FALSE)
 save_table(table1, "Table1_baseline.csv")
 
-# The Results prose quotes means, not medians, when it describes age, BMI and
-# SPISE ("33.2 vs 29.4 kg/m2", "5.20 vs 6.03"); the published table itself
-# shows medians. Both summaries are written out so either can be checked.
-# See docs/KNOWN_DIFFERENCES.md, B7.
+# Table 1 reports medians (IQR). The mean (SD) version is written alongside it
+# so that the figures quoted in the Results text (age, BMI, SPISE) can be
+# checked against the summary they were taken from.
+# See docs/implementation-notes.md, section 2.
 mean_tab <- do.call(rbind, lapply(names(cont_vars), function(k) {
   x <- cohort[[cont_vars[[k]]]]; y <- cohort$asthma
   m <- function(v) sprintf("%.2f (%.2f)", mean(v, na.rm = TRUE), stats::sd(v, na.rm = TRUE))

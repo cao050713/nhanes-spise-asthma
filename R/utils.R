@@ -80,15 +80,15 @@ SHAP_N_BACKGROUND <- 200L
 RCS_KNOTS       <- 3L
 
 # The six features the published model was built on. The three selection
-# algorithms are stochastic and the original run's seeds were never recorded,
-# so R/09 reconstructs them as a check but the archived set below is what the
-# models in R/10-R/14 use. See docs/KNOWN_DIFFERENCES.md, item A7.
+# algorithms are stochastic and their original fold seeds were never recorded,
+# so R/09 reconstructs them as a check while the archived set below is what the
+# models in R/10-R/14 use. See docs/implementation-notes.md, section 1.
 CONSENSUS_PUBLISHED <- c("spise", "LBDLYMNO", "LBDNENO", "LBDEONO",
                          "cancer", "CVD")
 
-# Same reasoning for the algorithm that was locked: R/11 applies the
-# prespecified selection rule and reports its winner, but fits and locks the
-# algorithm the manuscript reports. See docs/KNOWN_DIFFERENCES.md, item A7.
+# Same reasoning for the learner: R/11 applies the prespecified selection rule
+# and reports its winner, but fits and locks the archived choice.
+# See docs/implementation-notes.md, section 1.
 ALGORITHM_PUBLISHED <- "GBM"
 
 # ---------------------------------------------------------------------------

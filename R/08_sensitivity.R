@@ -56,10 +56,10 @@ tidy_terms <- function(fit, prefix, model_label, exposure) {
 # ---------------------------------------------------------------------------
 # (a) Quartiles of SPISE, survey-weighted
 # ---------------------------------------------------------------------------
-# Cut points come from the sample distribution of SPISE. This reproduces the
-# published Table S1 (Q4: OR 0.50, p = 0.014). Weighted cut points
-# (svyquantile) give a materially different Q4 (0.52, 0.30-0.90); see
-# docs/KNOWN_DIFFERENCES.md, B5.
+# Cut points come from the unweighted sample distribution of SPISE, which is
+# what the published Table S1 reports (Q4: OR 0.50, p = 0.014). Weighted
+# quantiles (svyquantile) are not used anywhere.
+# See docs/implementation-notes.md, section 2.
 cuts <- unique(stats::quantile(cohort$spise, 0:4 / 4, na.rm = TRUE))
 cuts[1] <- cuts[1] - 1e-8
 cuts[5] <- cuts[5] + 1e-8

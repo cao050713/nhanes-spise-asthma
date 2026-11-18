@@ -21,7 +21,7 @@ item codes except where a derived name is used.
 |---|---|---|
 | `MCQ010` | MCQ | "Ever told by a doctor you have asthma?" 1 yes, 2 no |
 | `MCQ035` | MCQ | "Do you still have asthma?" 1 yes, 2 no (asked only when MCQ010 = 1) |
-| `asthma` | derived | **Current asthma**: 1 when `MCQ010 = 1` and `MCQ035 = 1`; 0 when `MCQ010 = 2`, or `MCQ010 = 1` with `MCQ035 = 2`; otherwise missing. See `docs/KNOWN_DIFFERENCES.md` B1. |
+| `asthma` | derived | **Current asthma**: 1 when `MCQ010 = 1` and `MCQ035 = 1`; 0 when `MCQ010 = 2`, or `MCQ010 = 1` with `MCQ035 = 2`; otherwise missing. Built by `asthma_from_items()` in `R/02_build_cohort.R`. |
 
 ## Exposure
 

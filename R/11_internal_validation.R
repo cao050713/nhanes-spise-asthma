@@ -91,8 +91,8 @@ save_table(summ, "Table3_model_selection.csv")
 # re-run's choice is kept in the table above.
 if (!identical(selected, ALGORITHM_PUBLISHED)) {
   message("NOTE: the prespecified rule selected '", selected, "' in this run; ",
-          "the published analysis locked '", ALGORITHM_PUBLISHED, "', which is ",
-          "what is fitted and locked below. See docs/KNOWN_DIFFERENCES.md, A7.")
+          "the archived choice '", ALGORITHM_PUBLISHED, "' is fitted and locked ",
+          "below. See docs/implementation-notes.md, section 1.")
 }
 selected <- ALGORITHM_PUBLISHED
 cat("Locked algorithm:", selected, "\n")

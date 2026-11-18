@@ -150,7 +150,7 @@ print(reconstructed)
 # away from it, because both depend on a random fold split whose seed is not
 # recorded anywhere. The consensus therefore has to be the archived one --
 # everything downstream in R/10-R/14 is built on these six features, and the
-# manuscript reports results for these six. See docs/KNOWN_DIFFERENCES.md, A7.
+# models in R/10-R/14 are built on them. See docs/implementation-notes.md, section 1.
 consensus <- CONSENSUS_PUBLISHED
 
 cat("\nConsensus used downstream (", length(consensus), " variables ):\n", sep = "")

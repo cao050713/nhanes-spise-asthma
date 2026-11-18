@@ -1,6 +1,6 @@
 # SPISE and asthma in US adults: analysis code
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24332109.svg)](https://doi.org/10.5281/zenodo.24332109)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24332108.svg)](https://doi.org/10.5281/zenodo.24332108)
 
 Analysis code for the study *"The Single Point Insulin Sensitivity Estimator
 (SPISE) and asthma in US adults: a cross-sectional analysis and prediction
@@ -127,7 +127,7 @@ Results that depend on a random split, a bootstrap or a machine-learning fit
 are deterministic for a given `SEED` but are not bit-identical to the published
 analysis, because the original run's seeds were never recorded and the consensus
 feature set and the winning algorithm are archived rather than recomputed
-(`docs/KNOWN_DIFFERENCES.md`, A7 and A13). The pipeline is otherwise
+(`docs/implementation-notes.md`, section 1). The pipeline is otherwise
 self-checking: `R/02_build_cohort.R` warns if the cohort size does not match,
 because a mismatch there means the raw files or the eligibility rules differ
 from the ones used in the paper.
@@ -172,27 +172,24 @@ used for a given run are recorded alongside the results.
   consensus archived in `R/utils.R` (`CONSENSUS_PUBLISHED`) for everything
   downstream. The original LASSO and RF-RFE fold seeds were never recorded and
   cannot be recovered, so the reconstruction reproduces Boruta exactly and the
-  other two to within one variable. See `docs/KNOWN_DIFFERENCES.md`, A7.
+  other two to within one variable. See `docs/implementation-notes.md`.
 * Step 11 applies the same rule to the algorithm choice and reports its
-  winner, but fits and locks the published algorithm (`ALGORITHM_PUBLISHED`,
-  GBM) whenever the two disagree — a random forest locked instead would have
-  an apparent AUC of 0.999 and would not be the model the paper describes.
-  See `docs/KNOWN_DIFFERENCES.md`, A13.
+  winner, but fits and locks the archived algorithm (`ALGORITHM_PUBLISHED`,
+  GBM). The two are not interchangeable: a random forest fitted on the whole
+  development set has an apparent AUC of 0.999 against the 0.722 of the locked
+  model. See `docs/implementation-notes.md`.
 
 ---
 
-## Known differences between this code and the manuscript
+## Implementation notes
 
-`docs/KNOWN_DIFFERENCES.md` lists every place where the original analysis
-scripts and the submitted text disagreed, and how each was resolved. Section A
-lists thirteen code-side fixes. Section B listed nine statements in the
-manuscript that needed an editorial decision; the author has now ruled on all
-of them — the asthma definition, the SHAP sample size and the Q4 confidence
-interval were fixed in the manuscript, the insulin subset turned out to be
-correct (fasting insulin lives in the GLU file before 2013, and `R/01`/`R/02`
-were updated to merge it that way), and the remaining four (Python clause,
-unweighted-sensitivity numbers, Table 1 wording, external calibration slope)
-stand as published.
+`docs/implementation-notes.md` records the two inputs that are archived rather
+than recomputed (the six-feature consensus and the locked learner, both seeded
+by fold splits that were never recorded), the analysis choices that follow the
+manuscript rather than a package default, and the reporting conventions used in
+`output/`. `docs/data-dictionary.md` documents every derived variable, and
+`docs/code-to-paper.md` maps each reported quantity to the script that produces
+it.
 
 ---
 
@@ -201,7 +198,7 @@ stand as published.
 If you use this code, please cite the software:
 
 > Cao X. (2026). *SPISE and asthma in US adults: analysis pipeline (NHANES
-> 2009–2018)*. Zenodo. <https://doi.org/10.5281/zenodo.24332109>
+> 2009–2018)* (v1.1.0). Zenodo. <https://doi.org/10.5281/zenodo.24332108>
 
 Please also cite the paper (details on acceptance) and the NHANES data:
 

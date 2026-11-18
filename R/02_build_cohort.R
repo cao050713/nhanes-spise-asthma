@@ -29,9 +29,8 @@ need("haven", "dplyr")
 # MCQ035  "Do you still have asthma?"   (asked only when MCQ010 = 1)
 #
 # The published analysis uses *current* asthma: a positive answer to both
-# items. This gives 413 cases in the analytic sample. Using MCQ010 alone
-# gives 637 cases and does not reproduce the paper. See
-# docs/KNOWN_DIFFERENCES.md, item 1.
+# items, which gives 413 cases in the analytic sample. MCQ010 on its own would
+# count a lifetime diagnosis (637 cases). See docs/data-dictionary.md.
 asthma_from_items <- function(mcq010, mcq035) {
   dplyr::case_when(
     mcq010 == 1 & mcq035 == 1 ~ 1L,   # ever diagnosed and still has asthma
