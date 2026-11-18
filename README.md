@@ -1,5 +1,7 @@
 # SPISE and asthma in US adults: analysis code
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24332109.svg)](https://doi.org/10.5281/zenodo.24332109)
+
 Analysis code for the study *"The Single Point Insulin Sensitivity Estimator
 (SPISE) and asthma in US adults: a cross-sectional analysis and prediction
 model with temporal external validation"*.
@@ -196,8 +198,12 @@ stand as published.
 
 ## Citation
 
-If you use this code, please cite the paper (details on acceptance) and the
-NHANES data:
+If you use this code, please cite the software:
+
+> Cao X. (2026). *SPISE and asthma in US adults: analysis pipeline (NHANES
+> 2009–2018)*. Zenodo. <https://doi.org/10.5281/zenodo.24332109>
+
+Please also cite the paper (details on acceptance) and the NHANES data:
 
 > National Center for Health Statistics. National Health and Nutrition
 > Examination Survey, 2009–2018. Hyattsville, MD: NCHS.

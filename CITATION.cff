@@ -6,6 +6,10 @@ message: >-
   If you use this code, please cite both the software (this repository)
   and the associated manuscript.
 type: software
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24332109
+    description: Zenodo archive of version 1.0.0
 authors:
   - alias: caoxuanang
 version: 1.0.0
