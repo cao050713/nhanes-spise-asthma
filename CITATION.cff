@@ -12,7 +12,7 @@ version: 1.0.0
 date-released: "2026-11-18"
 license: MIT
 repository-code: >-
-  https://github.com/YOUR-GITHUB-USERNAME/nhanes-spise-asthma
+  https://github.com/cao050713/nhanes-spise-asthma
 keywords:
   - NHANES
   - SPISE
